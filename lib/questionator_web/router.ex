@@ -17,7 +17,7 @@ defmodule QuestionatorWeb.Router do
   scope "/", QuestionatorWeb do
     pipe_through :browser
 
-    live "/", PageLive, :index
+    live "/", QuestionLive, :index
   end
 
   # Other scopes may use custom stacks.

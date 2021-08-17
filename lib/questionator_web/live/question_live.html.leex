@@ -1,0 +1,26 @@
+<h1>Questions</h1>
+
+<form action="#" phx-submit="create">
+  <%= text_input :question, :text, placeholder: "Add a question" %>
+  <%= submit "Add One Question", phx_disable_with: "Adding..." %>
+</form>
+
+<form action="#" phx-submit="create_multiple">
+  <%= textarea :question, :text, placeholder: "Add multiple questions" %>
+  <%= submit "Add Questions", phx_disable_with: "Adding..." %>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Question</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= for question <- @questions do %>
+      <tr>
+        <td><%= question.text %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

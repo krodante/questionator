@@ -4,6 +4,7 @@ defmodule Questionator.Repo.Migrations.CreateQuestions do
   def change do
     create table(:questions) do
       add :text, :string
+      add :asked, :boolean, default: false
 
       timestamps()
     end
