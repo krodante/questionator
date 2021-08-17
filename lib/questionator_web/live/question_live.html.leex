@@ -14,12 +14,16 @@
   <thead>
     <tr>
       <th>Question</th>
+      <th>Asked</th>
     </tr>
   </thead>
   <tbody>
     <%= for question <- @questions do %>
-      <tr>
+      <tr class="<%= question_status(question) %>">
         <td><%= question.text %></td>
+        <td>
+          <%= link(link_text(question), to: "#", phx_click: "toggle_asked", phx_value_id: question.id, value: question.asked) %>
+        </td>
       </tr>
     <% end %>
   </tbody>

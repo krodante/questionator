@@ -4,6 +4,7 @@ defmodule Questionator.Questions.Question do
 
   schema "questions" do
     field :text, :string
+    field :asked, :boolean
 
     timestamps()
   end
@@ -11,7 +12,7 @@ defmodule Questionator.Questions.Question do
   @doc false
   def changeset(question, attrs) do
     question
-    |> cast(attrs, [:text])
+    |> cast(attrs, [:text, :asked])
     |> validate_required([:text])
     |> unique_constraint(:text)
   end

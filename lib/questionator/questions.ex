@@ -14,13 +14,9 @@ defmodule Questionator.Questions do
     Phoenix.PubSub.subscribe(Questionator.PubSub, @topic)
   end
 
-  def list_questions do
-    Repo.all(Question)
-  end
-
+  def list_questions, do: Repo.all(Question)
 
   def get_question!(id), do: Repo.get!(Question, id)
-
 
   def create_question(attrs \\ %{}) do
     %Question{}
