@@ -12,7 +12,7 @@ Because I love my teammates, I decided to come up with a little app to keep trac
 
 ## Step 1: Environment Setup
 
-To keep things simple, we'll follow the Installation Guide from hexdocs: https://hexdocs.pm/phoenix_live_view/installation.html. This guide uses Elixir 1.11.3 and Erlang 23.1.4, so be sure to confirm your versions with `elixir -v`:
+To keep things simple, we'll follow the [Installation Guide from hexdocs](https://hexdocs.pm/phoenix_live_view/installation.html). This guide uses Elixir 1.11.3 and Erlang 23.1.4, so be sure to confirm your versions with `elixir -v`:
 
 ```bash
 kathy.rodante@US-M120711 workspace % elixir -v
