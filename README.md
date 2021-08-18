@@ -34,7 +34,7 @@ According to the LiveView installation docs, all we need to do is enter `mix phx
 ```
 $ mix phx.new questionator --live
 
-... installing lots of boilerplate ...
+# ... installing lots of boilerplate # ...
 
 We are almost there! The following steps are missing:
 
@@ -105,10 +105,10 @@ Like the generator said, we'll need to add resources for `Question` in our route
 
 ```elixir
 # lib/questionator_web/router.ex
-...
+# ...
 # live "/", PageLive, :index <--- not this
 live "/", QuestionLive, :index # <--- this
-...
+# ...
 ```
 
 Since we're replacing the `PageLive` module, let's take some basic functions from there and create a `QuestionLive` module and render a list of questions:
@@ -160,11 +160,11 @@ While we're at it, go to the `root.html.leex` template and remove the Phoenix he
 ```elixir
 # lib/questionator_web/templates/layout/root.html.leex
 
-...
+# ...
 <body>
   <%= @inner_content %>
 </body>
-...
+# ...
 ```
 
 Now `http://localhost:4000/` will have a basic table!
@@ -182,10 +182,10 @@ Add a form at the top of the `question_live` template:
 
 <form action="#" phx-submit="create">
   <%= text_input :question, :text, placeholder: "Add a question" %>
-  <%= submit "Add Question", phx_disable_with: "Adding..." %>
+  <%= submit "Add Question", phx_disable_with: "Adding# ..." %>
 </form>
 
-...
+# ...
 
 ```
 
@@ -197,7 +197,7 @@ When you try to add a question in the form, it looks like everything is loading,
 
 ```
 ** (UndefinedFunctionError) function QuestionatorWeb.QuestionLive.handle_event/3 is undefined or private
-    QuestionatorWeb.QuestionLive.handle_event("create", %{"question" => %{"text" => "What's your favorite color?"}}, #Phoenix.LiveView.Socket<assigns: %{flash: %{}, live_action: :index, questions: []}, changed: %{}, endpoint: QuestionatorWeb.Endpoint, id: "phx-FpwqTlnMqzCI7QIG", parent_pid: nil, root_pid: #PID<0.925.0>, router: QuestionatorWeb.Router, transport_pid: #PID<0.921.0>, view: QuestionatorWeb.QuestionLive, ...>)
+    QuestionatorWeb.QuestionLive.handle_event("create", %{"question" => %{"text" => "What's your favorite color?"}}, #Phoenix.LiveView.Socket<assigns: %{flash: %{}, live_action: :index, questions: []}, changed: %{}, endpoint: QuestionatorWeb.Endpoint, id: "phx-FpwqTlnMqzCI7QIG", parent_pid: nil, root_pid: #PID<0.925.0>, router: QuestionatorWeb.Router, transport_pid: #PID<0.921.0>, view: QuestionatorWeb.QuestionLive, # ...>)
 ```
 
 Totally expected, since we haven't coded the `handle_event` function yet! Let's add that to `QuestionLive`:
@@ -250,7 +250,7 @@ For this tutorial, I actually want to add a bunch of questions at once, so let's
 ```html
 <form action="#" phx-submit="create_multiple">
   <%= textarea :question, :text, placeholder: "Add multiple questions" %>
-  <%= submit "Add Questions", phx_disable_with: "Adding..." %>
+  <%= submit "Add Questions", phx_disable_with: "Adding# ..." %>
 </form>
 ```
 
@@ -337,7 +337,7 @@ We have our listener, so now we need to broadcast the events. Back in `Questiona
 ```elixir
 # lib/questionator/questions.ex
 
-...
+# ...
 def create_question(attrs \\ %{}) do
   %Question{}
   |> Question.changeset(attrs)
@@ -357,7 +357,7 @@ def delete_question(%Question{} = question) do
   |> broadcast_change([:question, :updated])
 end
 
-...
+# ...
 
 defp broadcast_change({:ok, result}, event) do
   Phoenix.PubSub.broadcast(Questionator.PubSub, @topic, {__MODULE__, event, result})
@@ -375,7 +375,7 @@ Back in our `question_live.html.leex` template, change the `<td><%= question.ask
 ```html
 # lib/questionator_web/live/question_live.html.leex
 
-...
+# ...
 <tbody>
   <%= for question <- @questions do %>
     <tr class="<%= question_status(question) %>">
@@ -386,7 +386,7 @@ Back in our `question_live.html.leex` template, change the `<td><%= question.ask
     </tr>
   <% end %>
 </tbody>
-...
+# ...
 ```
 
 This `link` function is neat because it adds the `phx_click` and `phx_value_id` attributes. These are like the `phx-submit` form binding. When you click on this element it will trigger the `handle_event` callback and match on "toggle_asked", so let's add that now:
@@ -394,7 +394,7 @@ This `link` function is neat because it adds the `phx_click` and `phx_value_id` 
 ```elixir
 # lib/questionator_web/live/question_live.ex
 
-...
+# ...
 @impl true
 def handle_event("toggle_asked", %{"id" => id}, socket) do
   Questions.get_question!(id)
@@ -411,7 +411,7 @@ defp toggle_question(question) do
 
   Questions.update_question(question, attrs)
 end
-...
+# ...
 ```
 
 The backend is hooked up, but we won't be able to notice any changes, so let's add a class to our rows to indicate whether or not the question has been asked. Add a helper function in `QuestionLive` to supply the appropriate class:
@@ -419,13 +419,13 @@ The backend is hooked up, but we won't be able to notice any changes, so let's a
 ```elixir
 # lib/questionator_web/live/question_live.ex
 
-...
+# ...
 def question_status(%{asked: true}), do: "asked"
 def question_status(_), do: ""
 
 def question_status(%{asked: true}), do: "asked"
 def question_status(_), do: ""
-...
+# ...
 ```
 
 Then add the `.asked` class to our CSS so we can definitely see which questions we've asked already. Create a `question.css` file in `assets/css` and add this little bit of CSS (or however you'd like to style it):
@@ -442,7 +442,7 @@ And don't forget to add your new stylesheet to `app.css` (note: you could also j
 ```css
 @import "./phoenix.css";
 @import "./question.css";
-...
+# ...
 ```
 
 Now if you go back to your app and click "Ask!", you'll see that the question has been sent to the bottom of the list and has your fancy `.asked` class!
