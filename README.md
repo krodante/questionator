@@ -15,7 +15,7 @@ Because I love my teammates, I decided to come up with a little app to keep trac
 To keep things simple, we'll follow the [Installation Guide from hexdocs](https://hexdocs.pm/phoenix_live_view/installation.html). This guide uses Elixir 1.11.3 and Erlang 23.1.4, so be sure to confirm your versions with `elixir -v`:
 
 ```bash
-kathy.rodante@US-M120711 workspace % elixir -v
+$ elixir -v
 Erlang/OTP 23 [erts-11.1.3] [source] [64-bit] [smp:12:12] [ds:12:12:10] [async-threads:1] [hipe]
 
 Elixir 1.11.3 (compiled with Erlang/OTP 23)
@@ -24,7 +24,7 @@ Elixir 1.11.3 (compiled with Erlang/OTP 23)
 While we're at it, let's make sure we have `hex` and `phx_new`:
 
 ```
-kathy.rodante@US-M120711 workspace % mix archive.install hex phx_new 1.5.10
+$ mix archive.install hex phx_new 1.5.10
 ```
 
 Now we can generate a new app!
@@ -32,7 +32,7 @@ Now we can generate a new app!
 According to the LiveView installation docs, all we need to do is enter `mix phx.new my_app --live` in the terminal:
 
 ```
-kathy.rodante@US-M120711 workspace % mix phx.new questionator --live
+$ mix phx.new questionator --live
 
 ... installing lots of boilerplate ...
 
