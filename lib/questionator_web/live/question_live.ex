@@ -14,14 +14,14 @@ defmodule QuestionatorWeb.QuestionLive do
   def handle_event("create", %{"question" => params}, socket) do
     Questions.create_question(params)
 
-    {:noreply, assign(socket, questions: Questions.list_questions())}
+    {:noreply, fetch(socket)}
   end
 
   @impl true
   def handle_event("create_multiple", %{"question" => params}, socket) do
     create_multiple_questions(params)
 
-    {:noreply, assign(socket, questions: Questions.list_questions())}
+    {:noreply, fetch(socket)}
   end
 
   @impl true
@@ -29,7 +29,7 @@ defmodule QuestionatorWeb.QuestionLive do
     Questions.get_question!(id)
     |> toggle_question()
 
-    {:noreply, assign(socket, questions: Questions.list_questions())}
+    {:noreply, fetch(socket)}
   end
 
   @impl true
@@ -39,7 +39,7 @@ defmodule QuestionatorWeb.QuestionLive do
 
   defp create_multiple_questions(%{"text" => questions}) do
     questions
-    |> String.split("\r\n")
+    |> String.split(~r/\R/)
     |> Enum.map(&(%{"text" => &1}))
     |> Enum.each(&(Questions.create_question(&1)))
   end
