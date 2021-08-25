@@ -44,12 +44,6 @@ defmodule QuestionatorWeb.QuestionLive do
     |> Enum.each(&(Questions.create_question(&1)))
   end
 
-  def question_status(%{asked: true}), do: "asked"
-  def question_status(_), do: ""
-
-  def link_text(%{asked: true}), do: "Reset"
-  def link_text(_), do: "Ask!"
-
   defp fetch(socket) do
     assign(socket, questions: Questions.list_questions())
   end
