@@ -1,8 +1,8 @@
-# Questionator
+# Connecting a Remote Team with Phoenix LiveView
 
 ## Intro
 
-Even before Covid-Times, TRR's engineers have worked together remotely all over the world. I was once on a team where the PM and I were the only members who worked out of HQ, and we had to learn how to connect with each other while being so distant.
+Even before Covid-Times, TRR's engineers worked together remotely all over the world. I was once on a team where the Project Manager (PM) and I were the only members who worked out of HQ. We had to learn how to connect with each other in ways that didn't involve being in the same office together.
 
 One method that really worked for us was our "Weekly Question Day". Our PM found a list of classic icebreaker questions and would ask us one during standup each week. It added on maybe an extra 10 minutes to standup, but it was so worth the chance to get to know my teammates better. We'd learn about each other's crazy hobbies, or funniest childhood memories, or hypothetical zombie apocalypse preparedness - it really helped us connect and feel more empathy towards each other.
 
@@ -10,75 +10,136 @@ Unfortunately, keeping up with all those questions is a lot of work. You'd forge
 
 Because I love my teammates, I decided to come up with a little app to keep track of our questions - and get some LiveView practice in while I'm at it!
 
-## Step 1: Environment Setup
+## Step 0: Environment Setup
 
-To keep things simple, we'll follow the [Installation Guide from hexdocs](https://hexdocs.pm/phoenix_live_view/installation.html). This guide uses Elixir 1.11.3 and Erlang 23.1.4, so be sure to confirm your versions with `elixir -v`:
+This guide assumes that your environment will be set up with these tools and versions:
+
+* [Elixir](https://elixir-lang.org/install.html#distributions) 1.11.3
+* [Erlang](https://elixir-lang.org/install.html#installing-erlang) 23.1.4
+* [PostgreSQL](https://www.postgresql.org/download/) 13.2
+* [hex](https://hex.pm/docs/usage) 0.21.2
+* [phx_new](https://hexdocs.pm/phoenix/installation.html#phoenix) (Phoenix) 1.5.10
+
+If your environment is already set up, feel free to skip to [Step 1](#Step-1-Using-Generatorss-to-Create-the-App)! If not, keep on reading!
+
+You can confirm your Elixir, Erlang, and Hex versions all at once with `mix hex.info`, PostgreSQL  with `postgres -V`, and Phoenix with `mix archive`:
 
 ```bash
-$ elixir -v
-Erlang/OTP 23 [erts-11.1.3] [source] [64-bit] [smp:12:12] [ds:12:12:10] [async-threads:1] [hipe]
+$ mix hex.info
+Hex:    0.21.2
+Elixir: 1.11.3
+OTP:    23.1.4
 
-Elixir 1.11.3 (compiled with Erlang/OTP 23)
+Built with: Elixir 1.11.4 and OTP 21.3
+
+$ postgres -V
+postgres (PostgreSQL) 13.2
+
+$ mix archive
+* hex-0.21.2
+* phx_new-1.5.10
 ```
 
-While we're at it, let's make sure we have `hex` and `phx_new`:
+## Step 1: Using Generators to Create the App
 
-```
-$ mix archive.install hex phx_new 1.5.10
-```
+Now we can generate a new app! Phoenix comes packed with various [mix tasks](https://hexdocs.pm/phoenix/mix_tasks.html#content) that allow us to quickly create the foundation for an application. The most basic generator is `mix phx.new my_app`, which will set up the bare structure, and then you can call other generators to add on it - if you want. You could also write your modules from scratch, but it's recommended to use community best practices with regards to application structure.
 
-Now we can generate a new app!
-
-According to the LiveView installation docs, all we need to do is enter `mix phx.new my_app --live` in the terminal:
+According to the [LiveView installation documentation](https://hexdocs.pm/phoenix_live_view/installation.html), all we need to do is enter `mix phx.new my_app --live` in the terminal. This is the same as the as the call for a regular Phoenix app, but the `--live` tag indicates that the generator will create additional folders and files for our LiveView modules.
 
 ```
 $ mix phx.new questionator --live
-
-# ... installing lots of boilerplate # ...
-
-We are almost there! The following steps are missing:
-
-    $ cd questionator
-    $ cd assets && npm install && node node_modules/webpack/bin/webpack.js --mode development
-
-Then configure your database in config/dev.exs and run:
-
-    $ mix ecto.create
-
-Start your Phoenix app with:
-
-    $ mix phx.server
-
-You can also run your app inside IEx (Interactive Elixir) as:
-
-    $ iex -S mix phx.server
+# ... installing lots of boilerplate ...
 ```
 
-We'll use PostgreSQL for our database and keep the same `dev.exs` :
+The generator not only creates the necessary folders and files, but also gives us instructions on how to get our app up and running.
+
+I ran into errors with the versions of node and npm on my machine, so I skipped the `cd assets ...` step. You don't _need_ node for this project, so you're welcome to move onto the database step. But if you do change into the assets directory, remember to go back to the project root directory `/questionator` before running `mix ecto.migrate`.
+
+Since we're using PostgreSQL for our database, we can skip the `configure your database in config/dev.exs` step. However, if you're using Docker, you will need to update your application like so:
+
+Change the `hostname` in `config/dev.exs`:
+
+```elixir
+# config/dev.exs
+
+use Mix.Config
+
+# Configure your database
+config :questionator, Questionator.Repo,
+  username: "postgres",
+  password: "postgres",
+  database: "questionator_dev",
+  hostname: "db",
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10
+
+# ... more config
+```
+
+Update your `docker-compose.yml`:
+
+```yaml=
+version: '3.1'
+
+services:
+  app:
+    build:
+      context: .
+    depends_on:
+      - db
+    ports:
+      - 4000:4000
+    restart: always
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+    restart: always
+```
+
+And use this as your `Dockerfile`:
 
 ```
-kathy.rodante@US-M120711 questionator % mix ecto.create
-Compiling 13 files (.ex)
-Generated questionator app
-The database for Questionator.Repo has already been created
+FROM elixir:latest
+
+WORKDIR /app
+
+COPY . /app
+
+RUN mix local.hex --force \
+  && mix local.rebar --force \
+  && mix do compile
+
+CMD mix phx.server
 ```
 
-Let's get this server running and bask in the glow of a new phoenix app!
-
-----------> Page screenshot <-------------
-
-Ahhh the Phoenix Framework main page that we all know and love. But if you check out the [LiveDashboard](http://localhost:4000/dashboard/home) link in the top-right corner, you see this beauty:
-
-----------> LiveView Dashboard Screenshot <-----------
-
-All the metrics!! Super fast page views! Dynamic rendering of data! And backend developers rejoice because there is NO JAVASCRIPT! I love this dashboard because it gives you a quick preview of all the goodness LiveView has to offer, along with great insight into how your application is running.
-
-## Step 2: Adding Questions
-
-In order to generate random questions, we'll need to be able to add some! Let's use a [context](https://hexdocs.pm/phoenix/Mix.Tasks.Phx.Gen.Context.html) with `mix phx.gen.context` to create our Questions schema and api layer to the database:
+Once your database in configured, we use another mix task to create it:
 
 ```
-kathy.rodante@US-M120711 questionator % mix phx.gen.context Questions Question questions text:unique asked:boolean
+$ mix ecto.create
+```
+
+Let's get this server running with `mix phx.server` and navigate to `http://localhost:4000` to bask in the glow of a new Phoenix app!
+
+![](https://i.imgur.com/5HUPaKx.png)
+
+Ahhh the Phoenix Framework main page. But if you check out the [LiveDashboard](http://localhost:4000/dashboard/home) link in the top-right corner, you see this beauty:
+
+![](https://i.imgur.com/53oZ4hN.png)
+
+All the metrics!! Super fast page views! Dynamic rendering of data! And backend developers rejoice because there is NO JAVASCRIPT!
+
+I love this [dashboard](https://github.com/phoenixframework/phoenix_live_dashboard) because it gives you a quick preview of all the goodness LiveView has to offer, along with great insight into how your application is running. LiveDashboard provides real-time performance monitoring and debugging tools, and you can use the [PageBuilder](https://hexdocs.pm/phoenix_live_dashboard/Phoenix.LiveDashboard.PageBuilder.html#content) module to customize your dashboard.
+
+In order to manage what questions we want to ask, we'll need to be able to add some! We'll use another mix task to generate a [context](https://hexdocs.pm/phoenix/Mix.Tasks.Phx.Gen.Context.html). Using the context generator will create all the basic functions (create, read, update, edit) we will need to interact with the [Ecto schema](https://hexdocs.pm/ecto/Ecto.Schema.html).
+
+The `mix phx.gen.context` task takes several arguments. The first argument is the context module, then the schema module, and then its plural name (which is just the table name). We want to create a `questions` table with two columns: `text` as a unique String type, and `asked` as a Boolean type, so our task will look like this:
+
+```
+$ mix phx.gen.context Questions Question questions text:unique asked:boolean
 * creating lib/questionator/questions/question.ex
 * creating priv/repo/migrations/20210817170936_create_questions.exs
 * creating lib/questionator/questions.ex
@@ -87,10 +148,17 @@ kathy.rodante@US-M120711 questionator % mix phx.gen.context Questions Question q
 * injecting test/questionator/questions_test.exs
 ```
 
-Migrate with:
+For fun, let's check out what this generator is creating:
+
+* `lib/questionator/questions/question.ex` is our schema file. This file is used to map any data source to an Elixir struct - in our case, data in the `questions` table can represented as `%Question{}` in our application
+* `priv/repo/migrations/20210817170936_create_questions.exs` is our migration file, where we define changes that we want to make to the database. We'll be creating a new table and adding `text` and `asked` columns.
+* `lib/questionator/questions.ex` contains the functions we'll use to manipulate data in the `questions` table, specifically: `list_questions/0`, `get_question!/1`, `create_question/1`, `update_question/2`, `delete_question/1`
+* `test/questionator/questions_test.exs` is a test file for the `Questions` module because yay testing!
+
+Since we have a new handy dandy migration file, we'll use another mix task to create our `questions` table:
 
 ```bash
-kathy.rodante@US-M120711 questionator % mix ecto.migrate
+$ mix ecto.migrate
 
 13:38:32.649 [info]  == Running 20210816201126 Questionator.Repo.Migrations.AddQuestionsTable.change/0 forward
 
@@ -99,21 +167,36 @@ kathy.rodante@US-M120711 questionator % mix ecto.migrate
 13:38:32.694 [info]  == Migrated 20210816201126 in 0.0s
 ```
 
-All right! Now we have a place for the data, so let's create a form to add some!
 
-Like the generator said, we'll need to add resources for `Question` in our router. That's a little different with LiveView, especially since we're only going to use one route for all of our actions. Instead of adding `resources "/questions", QuestionController`, we'll change the `live "/", PageView, :index` route to go to `QuestionLive`:
+
+## Step 2: Adding Questions
+
+All right! Now we have a place to store the data, so let's create a form to add some!
+
+We'll need to add resources for `Question` in our [router](https://hexdocs.pm/phoenix/Phoenix.Router.html). Normally, we'd call `resources "/questions", QuestionController` in order to connect HTTP actions and our application, but LiveView functions a bit differently. In our case, we'll call `live "/", QuestionLive, :index`. This will route any requests to `"/"` to our (soon to be created) `QuestionLive` module.
+
+Let's replace the call to the `PageLive` module to `QuestionLive` instead.
 
 ```elixir
 # lib/questionator_web/router.ex
+
 # ...
-# live "/", PageLive, :index <--- not this
-live "/", QuestionLive, :index # <--- this
+# live "/", PageLive, :index <--- replace this with the following
+live "/", QuestionLive, :index # <--- we want this
 # ...
 ```
 
-Since we're replacing the `PageLive` module, let's take some basic functions from there and create a `QuestionLive` module and render a list of questions:
+When we reload the page we'll get this useful error message:
+
+![](https://i.imgur.com/1NaykHp.png)
+
+So let's create `QuestionLive`!
+
+Since we're replacing the `PageLive` module, let's take some basic functions from there and create a `QuestionLive` module at `lib/questionator_web/live/question_live.ex` to render a list of questions:
 
 ```elixir
+# lib/questionator_web/live/question_live.ex
+
 defmodule QuestionatorWeb.QuestionLive do
   use QuestionatorWeb, :live_view
 
@@ -126,14 +209,31 @@ defmodule QuestionatorWeb.QuestionLive do
 end
 ```
 
-Ok, so what's happening? The [`LiveView.mount`](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#c:mount/3) callback is called when the router receives a request to the `live "/", QuestionLive, :index` router. `mount` performs the initial page load and opens the socket that will pass interactions between the client and backend. In this case, we want to load our list of questions for the database and return that to the client.
+Ok, so what's happening? The [LiveView.mount](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#c:mount/3) callback is called when the router receives a request to the `live "/", QuestionLive, :index` route. `mount` performs the initial page load and opens the socket that will pass interactions between the client and backend. In this case, we want to load our list of questions from the database and return that to the client.
 
-----> insert render error screenshot <-------
+![](https://i.imgur.com/GEULHPc.png)
 
-Indeed we do not have a `render/1` function! Let's do as the response suggests and add the `question_live.html.leex` file in the same folder as `question_live.ex`.  We'll add some basic HTML to our new template:
+Indeed, we do not have a `render/1` function! Let's add the `question_live.html.leex` file, but we'll add it to the `/templates` folder instead of `/live`. If we're using best practices (and we are because we're awesome), Phoenix organizes its rendering files in the `/templates` folder, and functions that facilitate rendering are placed in a view module in the `/views` folder.
+
+We'll create the view module first so that we can connect the `QuestionLive` module to the template. Create a file called `question_view.ex` in `lib/questionator_web/views`:
 
 ```elixir
-# lib/questionator_web/live/question_live.html.leex
+# lib/questionator_web/views/question_view.ex
+
+defmodule QuestionatorWeb.QuestionView do
+  use QuestionatorWeb, :view
+end
+```
+
+Whenever we want to add fancy helper functions for our template, we'll put them in this file.
+
+Next we'll create our template! We'll add a `/question` folder in `/templates` to separate Question-related templates from our root templates.
+
+
+For now we can just add some basic HTML to our new template:
+
+```elixir
+# lib/questionator_web/templates/question/question_live.html.leex
 
 <h1>Questions</h1>
 
@@ -155,7 +255,7 @@ Indeed we do not have a `render/1` function! Let's do as the response suggests a
 </table>
 ```
 
-While we're at it, go to the `root.html.leex` template and remove the Phoenix header. The `<body>` section should just have the `@inner_content` call:
+While we're at it, go to the `root.html.leex` template and remove the Phoenix header. The `<body>` section should just have the [`@inner_content`](https://hexdocs.pm/phoenix/views.html#layouts) call:
 
 ```elixir
 # lib/questionator_web/templates/layout/root.html.leex
@@ -169,27 +269,27 @@ While we're at it, go to the `root.html.leex` template and remove the Phoenix he
 
 Now `http://localhost:4000/` will have a basic table!
 
---------> new page screenshot <------------
+![](https://i.imgur.com/CprvmQZ.png)
 
 But empty tables are sad tables, so let's get some data in there.
 
 Add a form at the top of the `question_live` template:
 
 ```elixir
-# lib/questionator_web/live/question_live.html.leex
+# lib/questionator_web/templates/question/question_live.html.leex
 
 <h1>Questions</h1>
 
 <form action="#" phx-submit="create">
   <%= text_input :question, :text, placeholder: "Add a question" %>
-  <%= submit "Add Question", phx_disable_with: "Adding# ..." %>
+  <%= submit "Add Question", phx_disable_with: "Adding..." %>
 </form>
 
 # ...
 
 ```
 
-----> form ss <-----
+![](https://i.imgur.com/hQkywaK.png)
 
 Nothing fancy, just a little text form. The key part here, though, is the `phx-submit="create"` attribute on `form`. When you submit the form, it will trigger the `phx-submit` [form binding](https://hexdocs.pm/phoenix_live_view/form-bindings.html), which will send a "create" event to our `QuestionLive` module.
 
@@ -197,7 +297,7 @@ When you try to add a question in the form, it looks like everything is loading,
 
 ```
 ** (UndefinedFunctionError) function QuestionatorWeb.QuestionLive.handle_event/3 is undefined or private
-    QuestionatorWeb.QuestionLive.handle_event("create", %{"question" => %{"text" => "What's your favorite color?"}}, #Phoenix.LiveView.Socket<assigns: %{flash: %{}, live_action: :index, questions: []}, changed: %{}, endpoint: QuestionatorWeb.Endpoint, id: "phx-FpwqTlnMqzCI7QIG", parent_pid: nil, root_pid: #PID<0.925.0>, router: QuestionatorWeb.Router, transport_pid: #PID<0.921.0>, view: QuestionatorWeb.QuestionLive, # ...>)
+    # QuestionatorWeb.QuestionLive.handle_event("create", %{"question" => %{"text" => "What's your favorite color?"}}, #Phoenix.LiveView.Socket<assigns: %{flash: %{}, live_action: :index, questions: []}, changed: %{}, endpoint: QuestionatorWeb.Endpoint, id: "phx-FpwqTlnMqzCI7QIG", parent_pid: nil, root_pid: #PID<0.925.0>, router: QuestionatorWeb.Router, transport_pid: #PID<0.921.0>, view: QuestionatorWeb.QuestionLive, ...>)
 ```
 
 Totally expected, since we haven't coded the `handle_event` function yet! Let's add that to `QuestionLive`:
@@ -232,7 +332,7 @@ defmodule QuestionatorWeb.QuestionLive do
   def handle_event("create", %{"question" => question}, socket) do
     Questions.create_question(question)
 
-    {:noreply, assign(socket, questions: Questions.list_questions())}
+    {:noreply, fetch(socket)}
   end
 
   defp fetch(socket) do
@@ -243,30 +343,37 @@ end
 
 Now we can successfully add a new question on the same page!
 
-------------> new question (1) ss <---------------
+![](https://i.imgur.com/hz71N8A.png)
 
-For this tutorial, I actually want to add a bunch of questions at once, so let's add another form with a different `phx-submit` attribute:
+
+------------> new question (1) ss (but make it a gif) <---------------
+
+For this tutorial, I actually want to add a bunch of questions at once, so let's add another form to the `question_live.html.leex` template with a different `phx-submit` attribute:
 
 ```html
+# lib/questionator_web/templates/question/question_live.html.leex
+
 <form action="#" phx-submit="create_multiple">
-  <%= textarea :question, :text, placeholder: "Add multiple questions" %>
-  <%= submit "Add Questions", phx_disable_with: "Adding# ..." %>
+  <%= textarea :question, :text, placeholder: "Add multiple questions,\none per line" %>
+  <%= submit "Add Questions", phx_disable_with: "Adding..." %>
 </form>
 ```
 
-And we'll add another `handle_event` function to capture the `create_multiple` action:
+And we'll add another `handle_event` function to the `question_live.ex` module to capture the `create_multiple` action:
 
 ```elixir
+# lib/questionator_web/live/question_live.ex
+
 @impl true
 def handle_event("create_multiple", %{"question" => params}, socket) do
   create_multiple_questions(params)
 
-  {:noreply, assign(socket, questions: Questions.list_questions())}
+  {:noreply, fetch(socket)}
 end
 
 defp create_multiple_questions(%{"text" => questions}) do
   questions
-  |> String.split("\r\n")
+  |> String.split(~r/\R/)`
   |> Enum.map(&(%{"text" => &1}))
   |> Enum.each(&(Questions.create_question(&1)))
 end
@@ -274,7 +381,7 @@ end
 
 We can kindly ask our users to submit multiple questions separated by a new line, and hopefully it will parse correctly :smile: For example, using this input:
 
-```text
+```
 What is your pet's name?
 What was the first concert you went to?
 Do you have any siblings?
@@ -282,7 +389,10 @@ Do you have any siblings?
 
 Should give us all these new questions!
 
-------------> new questions ss <---------------
+![](https://i.imgur.com/Sr7krb3.png)
+
+
+------------> new questions ss but a gif instead <---------------
 
 All right! So! We can add questions individually or in bulk, so at least our question manager person can keep track of them. Now we need to help them check/uncheck questions off the list.
 
@@ -292,7 +402,7 @@ Let's say that our team decides to not have a single question manager person, bu
 
 When the community gets hyped about the glory of LiveView, it's more likely that they're talking about [Phoenix PubSub](https://hexdocs.pm/phoenix_pubsub/Phoenix.PubSub.html). PubSub allows our LiveView component to listen to changes in the database and update the component even if it is in a different process. For example, if we open up another localhost tab and add a question, that question will not be automatically added to our first tab:
 
------------> 2 tab screenshot <---------------
+-----------> 2 tab screenshot - but a gif instead <---------------
 
 This is definitely a problem if you have multiple clients working on the same app and you want them to have real-time information about changes.
 
@@ -320,7 +430,7 @@ def mount(_params, _session, socket) do
 end
 ```
 
-Similar to the `handle_event` function, we'll need to add a `handle_info` function that will handle any events that come in:
+Similar to the `handle_event` function, we'll need to add a `handle_info` function that will be called whenever a new message is published to the topic we are listening to:
 
 ```elixir
 # lib/questionator_web/live/question_live.ex
@@ -373,7 +483,7 @@ Our app is now wired to update our questions in real time too, so let's work on 
 Back in our `question_live.html.leex` template, change the `<td><%= question.asked %></td>` field to a link that we'll use to update the question:
 
 ```html
-# lib/questionator_web/live/question_live.html.leex
+# lib/questionator_web/templates/question/question_live.html.leex
 
 # ...
 <tbody>
