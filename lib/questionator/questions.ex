@@ -4,11 +4,10 @@ defmodule Questionator.Questions do
   """
 
   import Ecto.Query, warn: false
+  alias Questionator.Questions.Question
   alias Questionator.Repo
 
-  alias Questionator.Questions.Question
-
-  @topic inspect(__MODULE__)
+  @topic "question"
 
   def subscribe do
     Phoenix.PubSub.subscribe(Questionator.PubSub, @topic)
@@ -22,7 +21,7 @@ defmodule Questionator.Questions do
     %Question{}
     |> Question.changeset(attrs)
     |> Repo.insert()
-    |> broadcast_change([:question, :updated])
+    |> broadcast_change([:question, :created])
   end
 
   def update_question(%Question{} = question, attrs) do
@@ -34,7 +33,7 @@ defmodule Questionator.Questions do
 
   def delete_question(%Question{} = question) do
     Repo.delete(question)
-    |> broadcast_change([:question, :updated])
+    |> broadcast_change([:question, :deleted])
   end
 
   def change_question(%Question{} = question, attrs \\ %{}) do

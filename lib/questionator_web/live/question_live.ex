@@ -2,6 +2,7 @@ defmodule QuestionatorWeb.QuestionLive do
   use QuestionatorWeb, :live_view
 
   alias Questionator.Questions
+  alias QuestionatorWeb.QuestionView
 
   @impl true
   def mount(_params, _session, socket) do
@@ -9,6 +10,9 @@ defmodule QuestionatorWeb.QuestionLive do
 
     {:ok, fetch(socket)}
   end
+
+  @impl true
+  def render(assigns), do: QuestionView.render("question_live.html", assigns)
 
   @impl true
   def handle_event("create", %{"question" => params}, socket) do
@@ -26,14 +30,15 @@ defmodule QuestionatorWeb.QuestionLive do
 
   @impl true
   def handle_event("toggle_asked", %{"id" => id}, socket) do
-    Questions.get_question!(id)
+    id
+    |> Questions.get_question!()
     |> toggle_question()
 
     {:noreply, fetch(socket)}
   end
 
   @impl true
-  def handle_info({Questions, [:question | _], _}, socket) do
+  def handle_info({"question", [:question | _], _}, socket) do
     {:noreply, fetch(socket)}
   end
 
