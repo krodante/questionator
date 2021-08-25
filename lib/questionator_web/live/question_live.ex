@@ -45,8 +45,8 @@ defmodule QuestionatorWeb.QuestionLive do
   defp create_multiple_questions(%{"text" => questions}) do
     questions
     |> String.split(~r/\R/)
-    |> Enum.map(&(%{"text" => &1}))
-    |> Enum.each(&(Questions.create_question(&1)))
+    |> Enum.map(&%{"text" => &1})
+    |> Enum.each(&Questions.create_question(&1))
   end
 
   defp fetch(socket) do
@@ -54,10 +54,11 @@ defmodule QuestionatorWeb.QuestionLive do
   end
 
   defp toggle_question(question) do
-    attrs = case question.asked do
-      true -> %{"asked" => false}
-      false -> %{"asked" => true}
-    end
+    attrs =
+      case question.asked do
+        true -> %{"asked" => false}
+        false -> %{"asked" => true}
+      end
 
     Questions.update_question(question, attrs)
   end
