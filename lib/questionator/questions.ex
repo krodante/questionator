@@ -21,27 +21,28 @@ defmodule Questionator.Questions do
     %Question{}
     |> Question.changeset(attrs)
     |> Repo.insert()
-    |> broadcast_change([:question, :created])
+    |> broadcast_change()
   end
 
   def update_question(%Question{} = question, attrs) do
     question
     |> Question.changeset(attrs)
     |> Repo.update()
-    |> broadcast_change([:question, :updated])
+    |> broadcast_change()
   end
 
   def delete_question(%Question{} = question) do
-    Repo.delete(question)
-    |> broadcast_change([:question, :deleted])
+    question
+    |> Repo.delete()
+    |> broadcast_change()
   end
 
   def change_question(%Question{} = question, attrs \\ %{}) do
     Question.changeset(question, attrs)
   end
 
-  defp broadcast_change({:ok, result}, event) do
-    Phoenix.PubSub.broadcast(Questionator.PubSub, @topic, {__MODULE__, event, result})
+  defp broadcast_change({:ok, result}) do
+    Phoenix.PubSub.broadcast(Questionator.PubSub, @topic, "question_changed")
 
     {:ok, result}
   end

@@ -38,7 +38,7 @@ defmodule QuestionatorWeb.QuestionLive do
   end
 
   @impl true
-  def handle_info({"question", [:question | _], _}, socket) do
+  def handle_info("question_changed", socket) do
     {:noreply, fetch(socket)}
   end
 
