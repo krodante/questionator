@@ -6,9 +6,9 @@ defmodule Questionator.QuestionsTest do
   describe "questions" do
     alias Questionator.Questions.Question
 
-    @valid_attrs %{text: "some text"}
-    @update_attrs %{text: "some updated text"}
-    @invalid_attrs %{text: nil}
+    @valid_attrs %{text: "some text", asked: false}
+    @update_attrs %{text: "some updated text", asked: false}
+    @invalid_attrs %{text: nil, asked: false}
 
     def question_fixture(attrs \\ %{}) do
       {:ok, question} =

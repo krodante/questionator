@@ -50,4 +50,10 @@ defmodule Questionator.Questions do
 
     {:ok, result}
   end
+
+  defp broadcast_change({:error, result}) do
+    Phoenix.PubSub.broadcast(Questionator.PubSub, @topic, "errors")
+
+    {:error, result}
+  end
 end
