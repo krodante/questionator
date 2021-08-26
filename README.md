@@ -1,7 +1,5 @@
 # Connecting a Remote Team with Phoenix LiveView
 
-## Intro
-
 Even before Covid-Times, TRR's engineers worked together remotely all over the world. I was once on a team where the Project Manager (PM) and I were the only members who worked out of HQ. We had to learn how to connect with each other in ways that didn't involve being in the same office together.
 
 One method that really worked for us was our "Weekly Question Day". Our PM found a list of classic icebreaker questions and would ask us one during standup each week. It added on about an extra 10 minutes to standup, but it was so worth the chance to get to know my teammates better. We'd learn about each other's crazy hobbies, or funniest childhood memories, or hypothetical zombie apocalypse preparedness - it really helped us connect and feel more empathy towards each other.
@@ -14,15 +12,16 @@ Because I love my teammates, I decided to come up with a little app to keep trac
 1) I want it to be a single page... without writing any Javascript :exploding_head:
 1) I want the page to update without needing to be refreshed :arrows_counterclockwise:
 1) I want multiple users to be able to make changes to the app and see each other's changes in real time :handshake:
-1) My company primarily uses Elixir, so I'd like the app to be semi-relevant to my work (and Elixir is awesome) :nerd_face:
+1) My [company](https://elixirforum.com/t/jose-valim-interviews-fredrik-bjork-cto-the-realreal/24853) [primarily](https://github.com/TheRealReal) [uses](https://github.com/TheRealReal/prismic-elixir) Elixir, so I'd like the app to be semi-relevant to my work (and Elixir is awesome) :nerd_face:
 
 What framework could possibly meet all my needs? Thankfully, the wonderful creators of Phoenix have blessed us with [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view). LiveView keeps the state of a connection in a process, and templates (where we write the rendering code) render any changes that are made server-side. This way, we can build interactive, real-time apps without writing any Javascript code 🪄
 
 In this post, we'll build a LiveView app using Phoenix generators that will allow users to add questions to a list, mark whether or not they've been asked, and reset the question so that it can be asked again. Feel free to check out the finished code in the [github repo](https://github.com/krodante/questionator)!
 
-All right! Let's get started on **THE QUESTIONATOR**!
+All right! Let's get started on... **THE QUESTIONATOR**!
 
-![](https://i.imgur.com/xdh9ODg.gif)
+![](https://i.imgur.com/qMhXRGf.gif)
+
 
 ## Step 0: Environment Setup
 
@@ -186,11 +185,11 @@ $ mix ecto.migrate
 [info]  == Migrated 20210817170936 in 0.0s
 ```
 
-
+Now that everything is set up, let's get coding!
 
 ## Step 2: Adding Questions
 
-All right! Now we have a place to store the data, so let's create a form to add some!
+All right! We have a place to store the data, so let's create a form to add some!
 
 We'll need to add resources for `Question` in our [router](https://hexdocs.pm/phoenix/Phoenix.Router.html). Normally, we'd call `resources "/questions", QuestionController` in order to connect HTTP actions and our application, but LiveView functions a bit differently. In our case, we'll call `live "/", QuestionLive, :index`. This will route any requests to `"/"` to our (soon to be created) `QuestionLive` module.
 
@@ -457,7 +456,7 @@ Do you have any siblings?
 
 ![](https://i.imgur.com/zp8nFSI.gif)
 
-All right! So! We can add questions individually or in bulk, so at least our question manager person can keep track of them.
+All right! So! We can add questions individually or in bulk, so at least our question manager person can keep track of them. Next let's dive into what really powers our single page app: Phoenix PubSub!
 
 ## Step 3: Using PubSub to Manage Questions
 
@@ -679,7 +678,7 @@ And don't forget to add your new stylesheet to `app.css` (note: you could also j
 
 Let's add those new helper functions to our template and see our sweet new styles!
 
-```htmlembedded=
+```htmlembedded
 # lib/questionator_web/templates/question/question_live.html.leex
 
 ...
@@ -702,6 +701,16 @@ Let's add those new helper functions to our template and see our sweet new style
 
 Now if you go back to your app and click "Ask!", you'll see that the question has been sent to the bottom of the list and has your fancy `.asked` class!
 
-![](https://i.imgur.com/ucVkKy4.gif)
+![](https://i.imgur.com/opk1DvX.gif)
+
+:tada: Congratulations!! :tada: You just made a useful tool for team-bonding AND learned how to make an application using Phoenix LiveView!
 
 ## Conclusion
+
+Getting to know your remote teammates can be challenging, and any tool - no matter how small - that makes the process easier can have a huge impact on your team's happiness. Hopefully this post has helped you think of other ways you could use Phoenix LiveView for other projects! For example, I'm thinking about using it as a shopping list for my partner and I so we can keep track of whether or not one of us picked up something at the grocery store (gotta love that real-time updating among multiple clients!)
+
+If you'd like to expand on this project in particular, here are some neat ideas:
+
+- Add a randomizer button, so that you don't have to deal with the decision fatigue of choosing a question.
+- Allow users to create their own list of questions, along with roles for creating, editing, deleting, and marking questions as asked.
+- Analytics tracking to see which questions are commonly chosen with the randomizer, and which are skipped.
