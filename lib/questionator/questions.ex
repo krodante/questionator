@@ -13,7 +13,11 @@ defmodule Questionator.Questions do
     Phoenix.PubSub.subscribe(Questionator.PubSub, @topic)
   end
 
-  def list_questions, do: Repo.all(Question)
+  def list_questions do
+    Question
+    |> order_by(desc: :updated_at)
+    |> Repo.all()
+  end
 
   def get_question!(id), do: Repo.get!(Question, id)
 
