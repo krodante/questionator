@@ -8,15 +8,15 @@ Unfortunately, keeping up with all those questions is a lot of work. You'd forge
 
 Because I love my teammates, I decided to come up with a little app to keep track of our questions. However, I have a few specific requirements:
 
-1) I want it to be a single page. No clicking to new/edit/delete urls :x:
-1) I want it to be a single page... without writing any Javascript :exploding_head:
-1) I want the page to update without needing to be refreshed :arrows_counterclockwise:
-1) I want multiple users to be able to make changes to the app and see each other's changes in real time :handshake:
-1) My [company](https://elixirforum.com/t/jose-valim-interviews-fredrik-bjork-cto-the-realreal/24853) [primarily](https://github.com/TheRealReal) [uses](https://github.com/TheRealReal/prismic-elixir) Elixir, so I'd like the app to be semi-relevant to my work (and Elixir is awesome) :nerd_face:
+1) I want it to be a single page. No clicking to new/edit/delete urls :x: 
+1) I want it to be a single page... without writing any Javascript :exploding_head: 
+1) I want the page to update without needing to be refreshed :arrows_counterclockwise: 
+1) I want multiple users to be able to make changes to the app and see each other's changes in real time :handshake: 
+1) My [company](https://elixirforum.com/t/jose-valim-interviews-fredrik-bjork-cto-the-realreal/24853) [primarily](https://github.com/TheRealReal) [uses](https://github.com/TheRealReal/prismic-elixir) Elixir, so I'd like the app to be semi-relevant to my work (and Elixir is awesome) :nerd_face: 
 
-What framework could possibly meet all my needs? Thankfully, the wonderful creators of Phoenix have blessed us with [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view). LiveView keeps the state of a connection in a process, and templates (where we write the rendering code) render any changes that are made server-side. This way, we can build interactive, real-time apps without writing any Javascript code 🪄
+What framework could possibly meet all my needs? Thankfully, the wonderful creators of Phoenix have blessed us with [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view). LiveView keeps the state of a connection in a process, and templates (where we write the rendering code) render any changes that are made server-side. This way, we can build interactive, real-time apps without writing any Javascript code 🪄 
 
-In this post, we'll build a LiveView app using Phoenix generators that will allow users to add questions to a list, mark whether or not they've been asked, and reset the question so that it can be asked again. Feel free to check out the finished code in the [github repo](https://github.com/krodante/questionator)!
+In this post, we'll build a LiveView app using Phoenix generators that will allow users to add questions to a list, mark whether or not they've been asked, and reset the question so that it can be asked again.
 
 All right! Let's get started on... **THE QUESTIONATOR**!
 
@@ -101,12 +101,12 @@ services:
   app:
     build:
       context: .
-    depends_on:
+    depends_on: 
       - db
     ports:
       - 4000:4000
     restart: always
-    volumes:
+    volumes: 
       - .:/app
 
   db:
@@ -208,7 +208,7 @@ When we reload the page we'll get this useful error message:
 
 ![](https://i.imgur.com/TRCSYbF.png)
 
-So let's create `QuestionLive`!
+So let's create `QuestionLive`! 
 
 Since we're replacing the `PageLive` module in the `/lib/questionator/live` folder, let's take some basic functions from there and create a `QuestionLive` module at `lib/questionator_web/live/question_live.ex` to render a list of questions:
 
@@ -252,7 +252,7 @@ For now, we can just add some basic HTML to our new template:
 
 ```elixir
 # lib/questionator_web/templates/question/question_live.html.leex
-
+  
 <h1>Questions</h1>
 
 <table>
@@ -373,7 +373,7 @@ defmodule QuestionatorWeb.QuestionLive do
   def mount(_params, _session, socket) do
     {:ok, fetch(socket)}
   end
-
+  
   @impl true
   def render(assigns), do: QuestionView.render("question_live.html", assigns)
 
@@ -452,7 +452,7 @@ What was the first concert you went to?
 Do you have any siblings?
 ```
 
-...should give us all these new questions! No page reload! :raised_hands:
+...should give us all these new questions! No page reload! :raised_hands: 
 
 ![](https://i.imgur.com/zp8nFSI.gif)
 
@@ -607,7 +607,7 @@ Back in our `question_live.html.leex` template, change the `<td><%= question.ask
 ...
 ```
 
-This [`link/2`](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Link.html#link/2) function is neat because it adds the `phx_click` and `phx_value_id` attributes. These are like the `phx-submit` form binding ([more bindings](https://hexdocs.pm/phoenix_live_view/bindings.html#content) for reference). When you click on this element it will trigger our `handle_event/3` callback and match on "toggle_asked", so let's add that now:
+This [`link/2`](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Link.html#link/2) function is neat because it adds the `phx_click` and `phx_value_id` attributes. These are like the `phx-submit` form binding ([more bindings](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#module-bindings) for reference). When you click on this element it will trigger our `handle_event/3` callback and match on "toggle_asked", so let's add that now:
 
 ```elixir
 # lib/questionator_web/live/question_live.ex
@@ -685,7 +685,7 @@ Let's add those new helper functions to our template and see our sweet new style
 
 <table>
   ...
-
+  
   <tbody>
     <%= for question <- @questions do %>
       <tr class="<%= question_status(question) %>"> <!-- use question_status/1 here -->
@@ -714,3 +714,31 @@ If you'd like to expand on this project in particular, here are some neat ideas:
 - Add a randomizer button, so that you don't have to deal with the decision fatigue of choosing a question.
 - Allow users to create their own list of questions, along with roles for creating, editing, deleting, and marking questions as asked.
 - Analytics tracking to see which questions are commonly chosen with the randomizer, and which are skipped.
+
+Feel free to leave comments or submit a pull request on the finished code in the [github repo](https://github.com/krodante/questionator)!
+
+And if you're looking for an opportunity to solve complex problems with Elixir at a company with an incredible culture, [The RealReal is hiring](https://www.therealreal.com/careers#department-4053717002)! Come work with me and some fantastic Elixirists!
+
+# License
+
+MIT License
+
+Copyright (c) 2021 Kathy Rodante
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
